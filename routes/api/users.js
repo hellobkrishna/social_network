@@ -1,8 +1,8 @@
 const express =require('express');
 const gravatar = require('gravatar');
 const bcrypt = require('bcrypt');
-var jwt = require('jsonwebtoken');
-const config= require('config')
+const jwt = require('jsonwebtoken');
+var config= require('config')
 
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
@@ -34,7 +34,7 @@ try {
     //see if user exit
     let user =  User.findOne({email})
     if (user){
-        res.status(400).json({errors:[{msg:'users Already Exits!'}] });
+        return res.status(400).json({errors:[{msg:'users Already Exits!'}] });
     }
     //get users gravatar 
     var avatar = gravatar.url('email', {
@@ -53,21 +53,20 @@ try {
     user.password =  bcrypt.hashSync(password, salt);
     user.save()
     //Return jsonwebtoken
+
     const payload={
         user:{
             id:user.id
         }
     };
-    jwt.sign({
+    jwt.sign(
         payload,
         config.get('jwtSecret'),
         {expiresIn:360000},
         (err,token)=>{
-            if(err) throw err:
+            if(err) throw err;
             res.json({token})
-
-        }
-    })
+            });
 
 } catch (err) {
     console.error(err.message);
