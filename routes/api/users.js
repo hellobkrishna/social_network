@@ -17,7 +17,7 @@ router.post(
     body('name', 'Name is Required!').isLength({max:50}),
     body('email', 'Please enter Valid Email!').isEmail(),
     body('password', 'Please enter Password with 5 or more character! ').isLength({ min: 5 }),
-    (req,res)=>{
+    async (req,res)=>{
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -32,7 +32,7 @@ router.post(
 const {name, email, password} =req.body;
 try {
     //see if user exit
-    let user =  User.findOne({email})
+    let user = await User.findOne({email})
     if (user){
         return res.status(400).json({errors:[{msg:'users Already Exits!'}] });
     }
@@ -49,9 +49,11 @@ try {
         avatar,
         password
     })
-    const salt = bcrypt.genSaltSync(10);
-    user.password =  bcrypt.hashSync(password, salt);
-    user.save()
+    const salt = await bcrypt.genSalt(10);
+
+    user.password = await bcrypt.hash(password, salt);
+
+    await user.save();
     //Return jsonwebtoken
 
     const payload={
