@@ -83,7 +83,7 @@ router.post('/',
 
             if (profile) {
                 //Update
-                profile = new Profile.findOneAndUpdate(
+                profile = await Profile.findOneAndUpdate(
                     { user: req.user.id },
                     { $set: profileFields },
                     { new: true }
@@ -95,6 +95,7 @@ router.post('/',
             await profile.save();
             res.json(profile);
 
+
         } catch (err) {
             console.error(err.message)
             res.status(500).send('Server Error!')
@@ -104,6 +105,39 @@ router.post('/',
     }
 );
 
+// @route GET api/profile/
+// @Desc GET profile
+// @access Public
+
+router.get('/', async (req, res) => {
+    try {
+        const profiles = await Profile.find().populate('user', ['name', 'avatar']);
+        res.json(profiles)
+    } catch (err) {
+        console.error(err.message)
+        res.status(500).send('Server Error!')
+
+    }
+})
+
+// @route GET api/profile/user/:user_id
+// @Desc GET profile by user id
+// @access Public
+
+router.get('/user/:user_id', async (req, res) => {
+    try {
+        const profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar']);
+        if (!profile) res.status(400).json('Profile Not Found!');
+        res.json(profile)
+    } catch (err) {
+        console.error(err.message)
+        if (err.kind == 'ObjectId') {
+            return res.status(400).json('Profile Not Found!');
+        }
+        res.status(500).send('Server Error!')
+
+    } 
+})
 
 
 
